@@ -42,17 +42,17 @@ def test_entry_allowed():
     print("PASS: entry allowed")
 
 
-def test_entry_respects_max_position():
+def test_entry_capped_by_max_position():
     rm = make_risk()
 
     decision = rm.evaluate_entry(
         bot_id="BPER",
         equity=300.0,
-        entry_price=5.0,
-        stop_price=4.9,
+        entry_price=10.0,
+        stop_price=9.9,
     )
 
-    print("test_entry_respects_max_position:", decision)
+    print("test_entry_capped_by_max_position:", decision)
 
     assert decision.allowed is True
     assert decision.position_value_eur <= 240.0
@@ -134,7 +134,7 @@ def test_daily_loss_limit():
 
 def main():
     test_entry_allowed()
-    test_entry_respects_max_position()
+    test_entry_capped_by_max_position()
     test_max_concurrent_positions()
     test_max_trades_per_bot_per_day()
     test_daily_loss_limit()
