@@ -21,6 +21,9 @@ class Signal:
     target: Optional[float]
     reason: str
     timestamp: Optional[str] = None
+    net_rr: float = 0.0
+    score: float = 0.0
+    score_reason: str = ""
 
 
 class BaseStrategy:
@@ -31,9 +34,4 @@ class BaseStrategy:
         self.params = params or {}
 
     def evaluate(self, bars: pd.DataFrame) -> Signal:
-        """
-        bars must contain:
-            timestamp, open, high, low, close, volume
-        Use only data available up to the last bar.
-        """
         raise NotImplementedError

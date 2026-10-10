@@ -135,9 +135,13 @@ def main() -> int:
         print(f"Price: {result.price:.4f}")
         print(f"Stop: {result.stop}")
         print(f"Target: {result.target}")
+        print(f"Net RR: {result.net_rr:.2f}")
+        print(f"Score: {result.score:.2f}")
+        print(f"Score reason: {result.score_reason}")
 
         if result.risk_allowed is None:
             print(f"Risk: not evaluated")
+            print(f"Risk reason: {result.risk_reason}")
         elif result.risk_allowed is True:
             print(f"Risk: ALLOWED")
             print(f"Shares: {result.shares}")
@@ -148,8 +152,7 @@ def main() -> int:
 
     print("=" * 70)
     print("Dry run complete.")
-    print("Note: because max_concurrent_positions is 1, after the first trade is")
-    print("allowed, later bots may be blocked by the risk manager.")
+    print("The best-scored BUY signal is evaluated first by the risk manager.")
     return 0
 
 
