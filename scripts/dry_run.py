@@ -13,6 +13,7 @@ import pandas as pd
 
 from bot.config import load_config
 from bot.engine import Engine
+from bot.logger import setup_logging
 
 
 def make_bars(rows):
@@ -25,12 +26,7 @@ def make_bars(rows):
 
 
 def opening_range_breakout_bars():
-    """
-    Fake 1-minute bars where price breaks above the first 15-minute range.
-    Designed to be compatible with the small-account risk manager.
-    """
     rows = []
-
     base = "2026-01-05"
 
     for i in range(15):
@@ -61,12 +57,7 @@ def opening_range_breakout_bars():
 
 
 def vwap_reversion_bars():
-    """
-    Fake 1-minute bars where price drops below the intraday VWAP.
-    Designed to be compatible with the small-account risk manager.
-    """
     rows = []
-
     base = "2026-01-05"
 
     for i in range(12):
@@ -97,6 +88,8 @@ def vwap_reversion_bars():
 
 
 def main() -> int:
+    setup_logging()
+
     cfg = load_config()
 
     engine = Engine(cfg)

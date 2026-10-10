@@ -30,30 +30,35 @@ risk:
   max_position_value_eur: 240
 
 universe:
-  - symbol: "RACE"
-    name: "Ferrari"
-    strategy: "opening_range"
-    enabled: false
-
   - symbol: "STLA"
     name: "Stellantis"
     strategy: "opening_range"
+    priority: 4
     enabled: true
 
   - symbol: "BPER"
     name: "BPER"
     strategy: "opening_range"
+    priority: 3
     enabled: true
 
   - symbol: "ENIE"
     name: "Eni"
     strategy: "vwap_reversion"
+    priority: 2
     enabled: true
 
   - symbol: "ITSA"
     name: "Intesa Sanpaolo"
     strategy: "vwap_reversion"
+    priority: 1
     enabled: true
+
+  - symbol: "RACE"
+    name: "Ferrari"
+    strategy: "opening_range"
+    priority: 0
+    enabled: false
 
 alerts:
   telegram_enabled: false
