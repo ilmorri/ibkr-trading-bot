@@ -1,20 +1,24 @@
-ib:
+ibkr:
   host: "localhost"
-  port_paper: 7497
+  port: 7497
+  clientId: 1
   port_live: 7496
-  client_id: 1
 
 market:
+  exchange: "MIL"
+  currency: "EUR"
   timezone: "Europe/Rome"
-  trading_windows:
+
+trading:
+  windows:
     - start: "09:00"
       end: "11:30"
     - start: "14:00"
       end: "17:15"
-  flatten_time: "17:25"
   no_trade_windows:
     - start: "12:00"
       end: "14:00"
+  flatten_time: "17:25"
 
 risk:
   max_concurrent_positions: 3
@@ -24,24 +28,29 @@ risk:
   max_trades_per_bot_per_day: 2
   min_position_value_eur: 3000
 
-bots:
-  - symbol: "RACE.MI"
+universe:
+  - symbol: "RACE"
+    name: "Ferrari"
     strategy: "opening_range"
     enabled: true
 
-  - symbol: "STLA.MI"
+  - symbol: "STLA"
+    name: "Stellantis"
     strategy: "opening_range"
     enabled: true
 
-  - symbol: "BPER.MI"
+  - symbol: "BPER"
+    name: "BPER"
     strategy: "opening_range"
     enabled: true
 
-  - symbol: "ENIE.MI"
+  - symbol: "ENIE"
+    name: "Eni"
     strategy: "vwap_reversion"
     enabled: true
 
-  - symbol: "ITSA.MI"
+  - symbol: "ITSA"
+    name: "Intesa Sanpaolo"
     strategy: "vwap_reversion"
     enabled: true
 
