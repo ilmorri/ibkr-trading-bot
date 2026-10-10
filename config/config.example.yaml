@@ -21,18 +21,19 @@ trading:
   flatten_time: "17:25"
 
 risk:
-  max_concurrent_positions: 3
-  max_gross_exposure_pct: 75
+  max_concurrent_positions: 1
+  max_gross_exposure_pct: 80
   risk_per_trade_pct: 1
   max_daily_loss_pct: 2
-  max_trades_per_bot_per_day: 2
-  min_position_value_eur: 3000
+  max_trades_per_bot_per_day: 1
+  min_position_value_eur: 150
+  max_position_value_eur: 240
 
 universe:
   - symbol: "RACE"
     name: "Ferrari"
     strategy: "opening_range"
-    enabled: true
+    enabled: false
 
   - symbol: "STLA"
     name: "Stellantis"
