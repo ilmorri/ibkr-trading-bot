@@ -13,7 +13,9 @@ import pandas as pd
 
 from bot.config import load_config
 from bot.engine import Engine
+from bot.execution import ExecutionEngine, MockExecutionClient
 from bot.logger import setup_logging
+from bot.risk import RiskManager
 
 
 def make_bars(rows):
@@ -104,12 +106,12 @@ def main() -> int:
         print("No enabled bots found in config/config.yaml")
         return 1
 
-    print("=" * 70)
-    print("DRY RUN ENGINE")
-    print("=" * 70)
-    print(f"Equity used for dry run: 300.00 EUR")
+    print("=" * 75)
+    print("DRY RUN ENGINE + ORDER LIFECYCLE")
+    print("=" * 75)
+    print("Equity used for dry run: 300.00 EUR")
     print(f"Enabled bots: {[item['symbol'] for item in enabled_bots]}")
-    print("=" * 70)
+    print("=" * 75)
 
     bars_by_symbol = {}
 
@@ -124,35 +126,78 @@ def main() -> int:
         else:
             bars_by_symbol[symbol] = None
 
-    results = engine.run_once(bars_by_symbol, equity=300.0)
+    result = engine.evaluate(bars_by_symbol)
 
-    for result in results:
-        print("-" * 70)
-        print(f"Bot: {result.bot_id}")
-        print(f"Strategy: {result.strategy}")
-        print(f"Signal action: {result.action}")
-        print(f"Signal reason: {result.reason}")
-        print(f"Price: {result.price:.4f}")
-        print(f"Stop: {result.stop}")
-        print(f"Target: {result.target}")
-        print(f"Net RR: {result.net_rr:.2f}")
-        print(f"Score: {result.score:.2f}")
-        print(f"Score reason: {result.score_reason}")
+    print("-" * 75)
+    print("Candidates after score filter:")
+    print("-" * 75)
 
-        if result.risk_allowed is None:
-            print(f"Risk: not evaluated")
-            print(f"Risk reason: {result.risk_reason}")
-        elif result.risk_allowed is True:
-            print(f"Risk: ALLOWED")
-            print(f"Shares: {result.shares}")
-            print(f"Position value: {result.position_value_eur:.2f} EUR")
-        else:
-            print(f"Risk: BLOCKED")
-            print(f"Risk reason: {result.risk_reason}")
+    if not result.candidates:
+        print("No candidates passed the score filter.")
+    else:
+        for candidate in result.candidates:
+            signal = candidate.signal
+            print(f"bot={candidate.bot_id}")
+            print(f"strategy={candidate.strategy}")
+            print(f"priority={candidate.priority}")
+            print(f"price={signal.price:.4f}")
+            print(f"stop={signal.stop}")
+            print(f"target={signal.target}")
+            print(f"score={signal.score:.3f}")
+            print(f"net_rr={signal.net_rr:.3f}")
+            print()
 
-    print("=" * 70)
+    risk = RiskManager.from_config(cfg)
+
+    client = MockExecutionClient(
+        outcomes={
+            "STLA": ["CANCELLED"],
+            "BPER": ["FILLED"],
+            "ENI": ["FILLED"],
+            "ISP": ["FILLED"],
+        },
+        default="FILLED",
+    )
+
+    execution = ExecutionEngine(
+        risk=risk,
+        client=client,
+        order_timeout_seconds=0.2,
+        poll_interval_seconds=0.01,
+    )
+
+    attempts = execution.execute_candidates(result.candidates, equity=300.0)
+
+    print("-" * 75)
+    print("Order attempts:")
+    print("-" * 75)
+
+    for attempt in attempts:
+        print(f"bot={attempt.bot_id}")
+        print(f"strategy={attempt.strategy}")
+        print(f"order_id={attempt.order_id}")
+        print(f"status={attempt.status}")
+        print(f"shares={attempt.shares}")
+        print(f"price={attempt.price:.4f}")
+        print(f"position_value_eur={attempt.position_value_eur:.2f}")
+        print(f"filled={attempt.filled}")
+        print(f"trade_opened={attempt.trade_opened}")
+        print(f"exit_reason={attempt.exit_reason}")
+        print(f"note={attempt.note}")
+        print()
+
+    print("=" * 75)
+    print("Final risk state:")
+    print("=" * 75)
+    print(f"open_positions: {risk.open_positions}")
+    print(f"gross_exposure_eur: {risk.gross_exposure_eur:.2f}")
+    print(f"reserved_positions: {risk.reserved_positions}")
+    print(f"reserved_gross_eur: {risk.reserved_gross_eur:.2f}")
+    print(f"trades_by_bot: {risk.trades_by_bot}")
+    print(f"order_attempts_by_bot: {risk.order_attempts_by_bot}")
+
+    print("=" * 75)
     print("Dry run complete.")
-    print("The best-scored BUY signal is evaluated first by the risk manager.")
     return 0
 
 
