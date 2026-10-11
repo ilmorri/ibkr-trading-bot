@@ -1,11 +1,11 @@
 ibkr:
   host: "localhost"
-  port: 7497
+  port: 4002
   clientId: 1
   port_live: 7496
 
 market:
-  exchange: "MIL"
+  exchange: "BVME"
   currency: "EUR"
   timezone: "Europe/Rome"
 
@@ -35,11 +35,11 @@ universe:
     name: "Stellantis"
     strategy: "opening_range"
     priority: 4
-    enabled: true
+    enabled: false
     range_minutes: 15
     target_range_multiple: 2.0
 
-  - symbol: "BPER"
+  - symbol: "BPE"
     name: "BPER"
     strategy: "opening_range"
     priority: 3

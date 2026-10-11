@@ -1,11 +1,11 @@
 ibkr:
   host: "localhost"
-  port: 7497
+  port: 4002
   clientId: 1
   port_live: 7496
 
 market:
-  exchange: "MIL"
+  exchange: "BVME"
   currency: "EUR"
   timezone: "Europe/Rome"
 
@@ -26,6 +26,7 @@ risk:
   risk_per_trade_pct: 1
   max_daily_loss_pct: 2
   max_trades_per_bot_per_day: 1
+  max_order_attempts_per_bot_per_day: 3
   min_position_value_eur: 150
   max_position_value_eur: 240
 
@@ -34,31 +35,41 @@ universe:
     name: "Stellantis"
     strategy: "opening_range"
     priority: 4
-    enabled: true
+    enabled: false
+    range_minutes: 15
+    target_range_multiple: 2.0
 
-  - symbol: "BPER"
+  - symbol: "BPE"
     name: "BPER"
     strategy: "opening_range"
     priority: 3
     enabled: true
+    range_minutes: 15
+    target_range_multiple: 2.0
 
-  - symbol: "ENIE"
+  - symbol: "ENI"
     name: "Eni"
     strategy: "vwap_reversion"
     priority: 2
     enabled: true
+    z_entry: 2.0
+    min_bars: 10
 
-  - symbol: "ITSA"
+  - symbol: "ISP"
     name: "Intesa Sanpaolo"
     strategy: "vwap_reversion"
     priority: 1
     enabled: true
+    z_entry: 2.0
+    min_bars: 10
 
   - symbol: "RACE"
     name: "Ferrari"
     strategy: "opening_range"
     priority: 0
     enabled: false
+    range_minutes: 15
+    target_range_multiple: 2.0
 
 alerts:
   telegram_enabled: false
