@@ -1,6 +1,6 @@
 # Trading Bot
 
-An automated intraday trading system for a small personal IBKR account, trading Borsa Italiana (MIL) equities in EUR.
+An automated intraday trading system for a small personal IBKR account, trading US equities in USD through IBKR smart routing. It began as a Borsa Italiana bot and moved to the US market on 2026-10-11.
 
 ## Language
 
@@ -13,7 +13,7 @@ A rule set that turns a series of Bars for one Instrument into a Signal (e.g. op
 _Avoid_: algo, model
 
 **Instrument**:
-A tradable security on the configured exchange, identified by its symbol (e.g. STLA, BPER).
+A tradable security on the configured exchange, identified by its symbol (e.g. INTC, SOFI).
 _Avoid_: ticker, stock, asset
 
 **Universe**:
@@ -29,11 +29,11 @@ One risk-approved position in one Instrument, from entry fill until exit; the un
 _Avoid_: order, fill, round trip
 
 **Equity**:
-The IBKR account's NetLiquidation in EUR; the whole account belongs to the bot, so every position in it is a bot position.
+The fixed budget the bot sizes positions from, set as `account.equity` in the config, in the trading currency (USD). It is not the balance IBKR reports: the paper account holds 1,000,000, and sizing from it would be meaningless.
 _Avoid_: liquidity, balance, cash, capital
 
 **Net R:R**:
-A Signal's expected reward after Estimated Cost, divided by its risk (entry to stop), both in basis points of the entry price.
+A Signal's expected reward minus Estimated Cost, divided by its risk (entry to stop) plus Estimated Cost, all in basis points of the entry price. The cost counts on both sides because a losing trade pays it too.
 _Avoid_: RR, reward/risk (unqualified)
 
 **Score**:
@@ -41,5 +41,5 @@ Net R:R weighted by a Strategy-specific strength factor; ranks competing BUY Sig
 _Avoid_: rank, confidence
 
 **Estimated Cost**:
-The assumed round-trip trading cost of a position, in basis points of entry price, subtracted from expected reward before a Signal is allowed.
+The assumed round-trip trading cost of a position, in basis points of entry price, subtracted from expected reward and added to expected loss before a Signal is allowed.
 _Avoid_: fees, slippage (each is only part of it)

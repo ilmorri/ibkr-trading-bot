@@ -41,8 +41,8 @@ class MockExecutionClient(ExecutionClient):
 
     outcomes example:
         {
-            "STLA": ["CANCELLED"],
-            "BPER": ["FILLED"],
+            "INTC": ["CANCELLED"],
+            "SOFI": ["FILLED"],
         }
     """
 
@@ -162,11 +162,11 @@ class ExecutionEngine:
             )
 
             logger.info(
-                "execution_risk bot=%s allowed=%s shares=%s position_value_eur=%.2f reason=%s",
+                "execution_risk bot=%s allowed=%s shares=%s position_value=%.2f reason=%s",
                 bot_id,
                 decision.allowed,
                 decision.shares,
-                decision.position_value_eur,
+                decision.position_value,
                 decision.reason,
             )
 
@@ -186,7 +186,7 @@ class ExecutionEngine:
                         score=score,
                         net_rr=net_rr,
                         score_reason=score_reason,
-                        position_value_eur=0.0,
+                        position_value=0.0,
                         filled=False,
                         trade_opened=False,
                         exit_reason=decision.reason,
@@ -209,10 +209,10 @@ class ExecutionEngine:
                 net_rr=net_rr,
                 score_reason=score_reason,
                 order_ref=f"{bot_id}-{int(time.time() * 1000)}",
-                position_value_eur=decision.position_value_eur,
+                position_value=decision.position_value,
             )
 
-            self.risk.on_order_submitted(bot_id, decision.position_value_eur)
+            self.risk.on_order_submitted(bot_id, decision.position_value)
 
             logger.info(
                 "execution_submit bot=%s order_ref=%s shares=%s price=%.4f stop=%.4f target=%.4f",
@@ -228,7 +228,7 @@ class ExecutionEngine:
             status = self._poll_status(order_id)
 
             if status == OrderStatus.FILLED.value:
-                self.risk.on_order_filled(bot_id, decision.position_value_eur)
+                self.risk.on_order_filled(bot_id, decision.position_value)
 
                 attempts.append(
                     OrderAttempt(
@@ -245,7 +245,7 @@ class ExecutionEngine:
                         score=score,
                         net_rr=net_rr,
                         score_reason=score_reason,
-                        position_value_eur=decision.position_value_eur,
+                        position_value=decision.position_value,
                         filled=True,
                         trade_opened=True,
                         exit_reason="order_filled",
@@ -255,7 +255,7 @@ class ExecutionEngine:
 
             else:
                 self.client.cancel_order(order_id)
-                self.risk.on_order_cancelled(bot_id, decision.position_value_eur)
+                self.risk.on_order_cancelled(bot_id, decision.position_value)
 
                 attempts.append(
                     OrderAttempt(
@@ -272,7 +272,7 @@ class ExecutionEngine:
                         score=score,
                         net_rr=net_rr,
                         score_reason=score_reason,
-                        position_value_eur=decision.position_value_eur,
+                        position_value=decision.position_value,
                         filled=False,
                         trade_opened=False,
                         exit_reason=f"order_{status.lower()}_not_filled",

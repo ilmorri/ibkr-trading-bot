@@ -106,7 +106,9 @@ class OpeningRange(BaseStrategy):
         loss_bps = max(1e-9, (entry_price - stop) / entry_price * 10000.0)
 
         net_profit_bps = profit_bps - cost_bps
-        net_rr = max(0.0, net_profit_bps) / loss_bps
+        # A losing trade pays the round-trip cost too, so it counts on both sides.
+        net_loss_bps = loss_bps + cost_bps
+        net_rr = max(0.0, net_profit_bps) / net_loss_bps
 
         avg_volume = float(range_bars["volume"].mean()) if "volume" in range_bars.columns else 1.0
         breakout_volume = float(current.get("volume", 1.0))
@@ -119,6 +121,7 @@ class OpeningRange(BaseStrategy):
             f"profit_bps={profit_bps:.1f} "
             f"loss_bps={loss_bps:.1f} "
             f"net_bps={net_profit_bps:.1f} "
+            f"net_loss_bps={net_loss_bps:.1f} "
             f"net_rr={net_rr:.2f} "
             f"strength={strength:.2f}"
         )

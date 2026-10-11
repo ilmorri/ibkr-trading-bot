@@ -2,23 +2,38 @@ ibkr:
   host: "localhost"
   port: 4002
   clientId: 1
-  port_live: 7496
+  port_live: 4001  # IB Gateway live port (7496 is TWS)
 
 market:
-  exchange: "BVME"
-  currency: "EUR"
-  timezone: "Europe/Rome"
+  exchange: "SMART"
+  currency: "USD"
+  timezone: "America/New_York"
+
+account:
+  # Fixed budget used for position sizing, in the trading currency.
+  # Do not size from the balance IBKR reports: the paper account holds 1,000,000.
+  currency: "USD"
+  equity: 300
 
 trading:
+  # All times are exchange time (market.timezone, New York), so daylight saving needs no adjustment.
+  # US regular session: 09:30-16:00 New York, about 15:30-22:00 in Italy.
   windows:
-    - start: "09:00"
-      end: "11:30"
-    - start: "14:00"
-      end: "17:15"
+    - start: "09:30"
+      end: "12:00"
+    - start: "13:30"
+      end: "15:50"
   no_trade_windows:
     - start: "12:00"
-      end: "14:00"
-  flatten_time: "17:25"
+      end: "13:30"
+  flatten_time: "15:55"
+
+costs:
+  # Round-trip cost in basis points of the position.
+  # US tiered minimum commission is $0.35 per order: $0.70 per round trip, which is
+  # 47 bps on the $150 minimum position and 29 bps on the $240 maximum.
+  # 50 covers the worst case plus a small allowance for spread. Not yet measured.
+  estimated_cost_bps: 50
 
 risk:
   max_concurrent_positions: 1
@@ -27,49 +42,42 @@ risk:
   max_daily_loss_pct: 2
   max_trades_per_bot_per_day: 1
   max_order_attempts_per_bot_per_day: 3
-  min_position_value_eur: 150
-  max_position_value_eur: 240
+  # Position limits in the trading currency (USD)
+  min_position_value: 150
+  max_position_value: 240
 
 universe:
-  - symbol: "STLA"
-    name: "Stellantis"
+  - symbol: "INTC"
+    name: "Intel"
     strategy: "opening_range"
     priority: 4
-    enabled: false
+    enabled: true
     range_minutes: 15
     target_range_multiple: 2.0
 
-  - symbol: "BPE"
-    name: "BPER"
+  - symbol: "SOFI"
+    name: "SoFi Technologies"
     strategy: "opening_range"
     priority: 3
     enabled: true
     range_minutes: 15
     target_range_multiple: 2.0
 
-  - symbol: "ENI"
-    name: "Eni"
+  - symbol: "CSCO"
+    name: "Cisco Systems"
     strategy: "vwap_reversion"
     priority: 2
     enabled: true
     z_entry: 2.0
     min_bars: 10
 
-  - symbol: "ISP"
-    name: "Intesa Sanpaolo"
+  - symbol: "KO"
+    name: "Coca-Cola"
     strategy: "vwap_reversion"
     priority: 1
     enabled: true
     z_entry: 2.0
     min_bars: 10
-
-  - symbol: "RACE"
-    name: "Ferrari"
-    strategy: "opening_range"
-    priority: 0
-    enabled: false
-    range_minutes: 15
-    target_range_multiple: 2.0
 
 alerts:
   telegram_enabled: false

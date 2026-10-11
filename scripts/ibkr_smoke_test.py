@@ -47,7 +47,7 @@ def main() -> int:
                 (d.contract for d in details if d.contract.primaryExchange == exchange),
                 details[0].contract,
             )
-            if chosen.primaryExchange != exchange:
+            if exchange != "SMART" and chosen.primaryExchange != exchange:
                 print(f"  NOTE: none listed on {exchange}; using {chosen.primaryExchange}")
             tick = ib.reqMktData(chosen, "", False, False)
             ib.sleep(4)

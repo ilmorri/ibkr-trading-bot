@@ -31,9 +31,13 @@ def load_config(path: str | Path | None = None) -> dict[str, Any]:
     cfg["ibkr"]["clientId"] = int(os.environ.get("IB_CLIENT_ID", cfg["ibkr"].get("clientId", 1)))
 
     cfg.setdefault("market", {})
-    cfg["market"].setdefault("exchange", "MIL")
-    cfg["market"].setdefault("currency", "EUR")
-    cfg["market"].setdefault("timezone", "Europe/Rome")
+    cfg["market"].setdefault("exchange", "SMART")
+    cfg["market"].setdefault("currency", "USD")
+    cfg["market"].setdefault("timezone", "America/New_York")
+
+    cfg.setdefault("account", {})
+    cfg["account"].setdefault("currency", cfg["market"]["currency"])
+    cfg["account"].setdefault("equity", 300.0)
 
     cfg.setdefault("universe", [])
     cfg.setdefault("risk", {})

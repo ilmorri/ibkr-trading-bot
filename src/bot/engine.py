@@ -66,6 +66,8 @@ class Engine:
 
         self.bots: list[tuple[str, str, Any, int]] = []
 
+        cost_bps = self.cfg.get("costs", {}).get("estimated_cost_bps")
+
         for item in self.cfg.get("universe", []):
             if not item.get("enabled", True):
                 continue
@@ -84,6 +86,8 @@ class Engine:
                 for key, value in item.items()
                 if key not in {"symbol", "name", "strategy", "enabled", "priority"}
             }
+            if cost_bps is not None:
+                params.setdefault("estimated_cost_bps", cost_bps)
 
             self.bots.append(
                 (

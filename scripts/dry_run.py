@@ -37,9 +37,9 @@ def opening_range_breakout_bars():
             (
                 ts,
                 10.00,
-                10.05,
+                10.15,
                 10.00,
-                10.02,
+                10.08,
                 1000,
             )
         )
@@ -47,10 +47,10 @@ def opening_range_breakout_bars():
     rows.append(
         (
             f"{base} 09:15",
-            10.10,
-            10.20,
-            10.08,
-            10.18,
+            10.16,
+            10.28,
+            10.14,
+            10.25,
             2000,
         )
     )
@@ -109,7 +109,10 @@ def main() -> int:
     print("=" * 75)
     print("DRY RUN ENGINE + ORDER LIFECYCLE")
     print("=" * 75)
-    print("Equity used for dry run: 300.00 EUR")
+    equity = float(cfg["account"]["equity"])
+    currency = cfg["account"]["currency"]
+
+    print(f"Equity used for dry run: {equity:.2f} {currency}")
     print(f"Enabled bots: {[item['symbol'] for item in enabled_bots]}")
     print("=" * 75)
 
@@ -149,15 +152,12 @@ def main() -> int:
 
     risk = RiskManager.from_config(cfg)
 
-    client = MockExecutionClient(
-        outcomes={
-            "STLA": ["CANCELLED"],
-            "BPER": ["FILLED"],
-            "ENI": ["FILLED"],
-            "ISP": ["FILLED"],
-        },
-        default="FILLED",
-    )
+    # Show both paths: the best candidate's order is cancelled, the next one fills.
+    outcomes = {}
+    if len(result.candidates) >= 2:
+        outcomes[result.candidates[0].bot_id] = ["CANCELLED"]
+
+    client = MockExecutionClient(outcomes=outcomes, default="FILLED")
 
     execution = ExecutionEngine(
         risk=risk,
@@ -166,7 +166,7 @@ def main() -> int:
         poll_interval_seconds=0.01,
     )
 
-    attempts = execution.execute_candidates(result.candidates, equity=300.0)
+    attempts = execution.execute_candidates(result.candidates, equity=equity)
 
     print("-" * 75)
     print("Order attempts:")
@@ -179,7 +179,7 @@ def main() -> int:
         print(f"status={attempt.status}")
         print(f"shares={attempt.shares}")
         print(f"price={attempt.price:.4f}")
-        print(f"position_value_eur={attempt.position_value_eur:.2f}")
+        print(f"position_value={attempt.position_value:.2f}")
         print(f"filled={attempt.filled}")
         print(f"trade_opened={attempt.trade_opened}")
         print(f"exit_reason={attempt.exit_reason}")
@@ -190,9 +190,9 @@ def main() -> int:
     print("Final risk state:")
     print("=" * 75)
     print(f"open_positions: {risk.open_positions}")
-    print(f"gross_exposure_eur: {risk.gross_exposure_eur:.2f}")
+    print(f"gross_exposure: {risk.gross_exposure:.2f}")
     print(f"reserved_positions: {risk.reserved_positions}")
-    print(f"reserved_gross_eur: {risk.reserved_gross_eur:.2f}")
+    print(f"reserved_gross: {risk.reserved_gross:.2f}")
     print(f"trades_by_bot: {risk.trades_by_bot}")
     print(f"order_attempts_by_bot: {risk.order_attempts_by_bot}")
 

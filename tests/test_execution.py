@@ -48,8 +48,8 @@ def make_risk(max_order_attempts_per_bot_per_day: int = 3) -> RiskManager:
         max_daily_loss_pct=2.0,
         max_trades_per_bot_per_day=1,
         max_order_attempts_per_bot_per_day=max_order_attempts_per_bot_per_day,
-        min_position_value_eur=150.0,
-        max_position_value_eur=240.0,
+        min_position_value=150.0,
+        max_position_value=240.0,
     )
 
 
@@ -89,7 +89,7 @@ def test_cancelled_order_releases_risk_and_next_bot_trades():
 
     assert risk.open_positions == 1
     assert risk.reserved_positions == 0
-    assert risk.gross_exposure_eur > 0
+    assert risk.gross_exposure > 0
 
     assert risk.trades_by_bot.get("STLA", 0) == 0
     assert risk.trades_by_bot.get("BPER", 0) == 1

@@ -28,7 +28,7 @@ class OrderRequest:
     net_rr: float
     score_reason: str
     order_ref: str
-    position_value_eur: float
+    position_value: float
 
 
 @dataclass
@@ -46,7 +46,7 @@ class OrderAttempt:
     score: float
     net_rr: float
     score_reason: str
-    position_value_eur: float
+    position_value: float
     filled: bool
     trade_opened: bool
     exit_reason: str

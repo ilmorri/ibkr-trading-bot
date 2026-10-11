@@ -9,7 +9,7 @@ from typing import Any
 class RiskDecision:
     allowed: bool
     shares: int
-    position_value_eur: float
+    position_value: float
     reason: str
 
 
@@ -21,18 +21,18 @@ class RiskManager:
     max_daily_loss_pct: float = 2.0
     max_trades_per_bot_per_day: int = 1
     max_order_attempts_per_bot_per_day: int = 3
-    min_position_value_eur: float = 150.0
-    max_position_value_eur: float = 240.0
+    min_position_value: float = 150.0
+    max_position_value: float = 240.0
 
     current_date: date = field(default_factory=date.today)
 
     # Filled positions only
     open_positions: int = 0
-    gross_exposure_eur: float = 0.0
+    gross_exposure: float = 0.0
 
     # Orders submitted but not yet filled/cancelled
     reserved_positions: int = 0
-    reserved_gross_eur: float = 0.0
+    reserved_gross: float = 0.0
 
     start_equity: float | None = None
 
@@ -55,8 +55,12 @@ class RiskManager:
             max_order_attempts_per_bot_per_day=int(
                 risk.get("max_order_attempts_per_bot_per_day", 3)
             ),
-            min_position_value_eur=float(risk.get("min_position_value_eur", 150.0)),
-            max_position_value_eur=float(risk.get("max_position_value_eur", 240.0)),
+            min_position_value=float(
+                risk.get("min_position_value", risk.get("min_position_value_eur", 150.0))
+            ),
+            max_position_value=float(
+                risk.get("max_position_value", risk.get("max_position_value_eur", 240.0))
+            ),
         )
 
     def _reset_day(self, equity: float) -> None:
@@ -143,10 +147,10 @@ class RiskManager:
                 )
 
         max_gross = equity * (self.max_gross_exposure_pct / 100.0)
-        committed = self.gross_exposure_eur + self.reserved_gross_eur
+        committed = self.gross_exposure + self.reserved_gross
         remaining_gross = max(0.0, max_gross - committed)
 
-        if remaining_gross < self.min_position_value_eur:
+        if remaining_gross < self.min_position_value:
             return RiskDecision(
                 False,
                 0,
@@ -154,7 +158,7 @@ class RiskManager:
                 (
                     "not_enough_remaining_gross_"
                     f"remaining_{remaining_gross:.2f}_"
-                    f"min_{self.min_position_value_eur:.2f}"
+                    f"min_{self.min_position_value:.2f}"
                 ),
             )
 
@@ -164,60 +168,60 @@ class RiskManager:
         notional = min(
             notional_by_risk,
             remaining_gross,
-            self.max_position_value_eur,
+            self.max_position_value,
         )
 
         shares = int(notional // entry_price)
-        max_shares = int(self.max_position_value_eur // entry_price)
+        max_shares = int(self.max_position_value // entry_price)
 
         if shares > max_shares:
             shares = max_shares
 
-        position_value_eur = shares * entry_price
+        position_value = shares * entry_price
 
-        if position_value_eur < self.min_position_value_eur:
+        if position_value < self.min_position_value:
             return RiskDecision(
                 False,
                 0,
                 0.0,
                 (
                     "position_below_minimum_"
-                    f"position_{position_value_eur:.2f}_"
-                    f"min_{self.min_position_value_eur:.2f}"
+                    f"position_{position_value:.2f}_"
+                    f"min_{self.min_position_value:.2f}"
                 ),
             )
 
         return RiskDecision(
             True,
             shares,
-            position_value_eur,
+            position_value,
             "ok",
         )
 
-    def on_order_submitted(self, bot_id: str, position_value_eur: float) -> None:
+    def on_order_submitted(self, bot_id: str, position_value: float) -> None:
         self.reserved_positions += 1
-        self.reserved_gross_eur += position_value_eur
+        self.reserved_gross += position_value
         self.order_attempts_by_bot[bot_id] = self.order_attempts_by_bot.get(bot_id, 0) + 1
 
-    def on_order_filled(self, bot_id: str, position_value_eur: float) -> None:
+    def on_order_filled(self, bot_id: str, position_value: float) -> None:
         if self.reserved_positions > 0:
             self.reserved_positions -= 1
 
-        self.reserved_gross_eur = max(0.0, self.reserved_gross_eur - position_value_eur)
+        self.reserved_gross = max(0.0, self.reserved_gross - position_value)
 
         self.open_positions += 1
-        self.gross_exposure_eur += position_value_eur
+        self.gross_exposure += position_value
 
         self.trades_by_bot[bot_id] = self.trades_by_bot.get(bot_id, 0) + 1
 
-    def on_order_cancelled(self, bot_id: str, position_value_eur: float) -> None:
+    def on_order_cancelled(self, bot_id: str, position_value: float) -> None:
         if self.reserved_positions > 0:
             self.reserved_positions -= 1
 
-        self.reserved_gross_eur = max(0.0, self.reserved_gross_eur - position_value_eur)
+        self.reserved_gross = max(0.0, self.reserved_gross - position_value)
 
-    def on_position_closed(self, bot_id: str, position_value_eur: float) -> None:
+    def on_position_closed(self, bot_id: str, position_value: float) -> None:
         if self.open_positions > 0:
             self.open_positions -= 1
 
-        self.gross_exposure_eur = max(0.0, self.gross_exposure_eur - position_value_eur)
+        self.gross_exposure = max(0.0, self.gross_exposure - position_value)

@@ -20,8 +20,8 @@ def make_risk(max_order_attempts_per_bot_per_day: int = 3) -> RiskManager:
         max_daily_loss_pct=2.0,
         max_trades_per_bot_per_day=1,
         max_order_attempts_per_bot_per_day=max_order_attempts_per_bot_per_day,
-        min_position_value_eur=150.0,
-        max_position_value_eur=240.0,
+        min_position_value=150.0,
+        max_position_value=240.0,
     )
 
 
@@ -39,13 +39,13 @@ def test_entry_allowed_and_filled():
 
     assert decision.allowed is True
     assert decision.shares > 0
-    assert 150.0 <= decision.position_value_eur <= 240.0
+    assert 150.0 <= decision.position_value <= 240.0
 
-    rm.on_order_submitted("STLA", decision.position_value_eur)
-    rm.on_order_filled("STLA", decision.position_value_eur)
+    rm.on_order_submitted("STLA", decision.position_value)
+    rm.on_order_filled("STLA", decision.position_value)
 
     assert rm.open_positions == 1
-    assert rm.gross_exposure_eur == decision.position_value_eur
+    assert rm.gross_exposure == decision.position_value
     assert rm.reserved_positions == 0
     assert rm.trades_by_bot.get("STLA", 0) == 1
 
@@ -64,7 +64,7 @@ def test_reserved_order_blocks_second_bot():
 
     assert first.allowed is True
 
-    rm.on_order_submitted("STLA", first.position_value_eur)
+    rm.on_order_submitted("STLA", first.position_value)
 
     second = rm.evaluate_entry(
         bot_id="BPER",
@@ -93,7 +93,7 @@ def test_cancelled_order_releases_reservation():
 
     assert first.allowed is True
 
-    rm.on_order_submitted("STLA", first.position_value_eur)
+    rm.on_order_submitted("STLA", first.position_value)
 
     second = rm.evaluate_entry(
         bot_id="BPER",
@@ -104,7 +104,7 @@ def test_cancelled_order_releases_reservation():
 
     assert second.allowed is False
 
-    rm.on_order_cancelled("STLA", first.position_value_eur)
+    rm.on_order_cancelled("STLA", first.position_value)
 
     third = rm.evaluate_entry(
         bot_id="BPER",
@@ -134,8 +134,8 @@ def test_filled_trade_blocks_same_bot_same_day():
 
     assert first.allowed is True
 
-    rm.on_order_submitted("STLA", first.position_value_eur)
-    rm.on_order_filled("STLA", first.position_value_eur)
+    rm.on_order_submitted("STLA", first.position_value)
+    rm.on_order_filled("STLA", first.position_value)
 
     while_open = rm.evaluate_entry(
         bot_id="STLA",
@@ -149,7 +149,7 @@ def test_filled_trade_blocks_same_bot_same_day():
     assert while_open.allowed is False
     assert "max_concurrent_positions" in while_open.reason or "max_trades_per_bot_per_day" in while_open.reason
 
-    rm.on_position_closed("STLA", first.position_value_eur)
+    rm.on_position_closed("STLA", first.position_value)
 
     after_close = rm.evaluate_entry(
         bot_id="STLA",
@@ -178,8 +178,8 @@ def test_cancelled_order_does_not_count_as_filled_trade():
 
     assert first.allowed is True
 
-    rm.on_order_submitted("STLA", first.position_value_eur)
-    rm.on_order_cancelled("STLA", first.position_value_eur)
+    rm.on_order_submitted("STLA", first.position_value)
+    rm.on_order_cancelled("STLA", first.position_value)
 
     assert rm.trades_by_bot.get("STLA", 0) == 0
     assert rm.order_attempts_by_bot.get("STLA", 0) == 1
@@ -210,8 +210,8 @@ def test_max_order_attempts_per_bot():
 
     assert first.allowed is True
 
-    rm.on_order_submitted("STLA", first.position_value_eur)
-    rm.on_order_cancelled("STLA", first.position_value_eur)
+    rm.on_order_submitted("STLA", first.position_value)
+    rm.on_order_cancelled("STLA", first.position_value)
 
     second = rm.evaluate_entry(
         bot_id="STLA",
