@@ -12,6 +12,8 @@ class OrderStatus(str, Enum):
     REJECTED = "REJECTED"
     TIMED_OUT = "TIMED_OUT"
     SKIPPED = "SKIPPED"
+    # A cancel was sent but the broker never confirmed the final state.
+    UNRESOLVED = "UNRESOLVED"
 
 
 @dataclass
@@ -53,3 +55,55 @@ class OrderAttempt:
     note: str = ""
     submitted_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
     updated_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+@dataclass
+class FillReport:
+    """State of an entry order as the broker reports it."""
+
+    status: str
+    filled_shares: int = 0
+    avg_fill_price: float = 0.0
+
+
+@dataclass
+class ExitReport:
+    """
+    A completed exit: the stop or target child filled, or the position was
+    flattened. `commission` is the whole round trip, entry included.
+    """
+
+    exit_price: float
+    shares: int
+    reason: str
+    commission: float = 0.0
+
+
+@dataclass
+class OpenTrade:
+    bot_id: str
+    symbol: str
+    strategy: str
+    entry_order_id: str
+    order_ref: str
+    shares: int
+    entry_price: float
+    stop: float
+    target: float
+    position_value: float
+    opened_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+
+
+@dataclass
+class ClosedTrade:
+    bot_id: str
+    symbol: str
+    strategy: str
+    order_ref: str
+    shares: int
+    entry_price: float
+    exit_price: float
+    exit_reason: str
+    pnl: float
+    opened_at: str
+    closed_at: str = field(default_factory=lambda: datetime.now(timezone.utc).isoformat())

@@ -3,11 +3,17 @@ ibkr:
   port: 4002
   clientId: 1
   port_live: 4001  # IB Gateway live port (7496 is TWS)
+  # Time in force of the stop and target attached to every entry. GTC keeps them alive overnight.
+  child_tif: "GTC"
 
 market:
   exchange: "SMART"
   currency: "USD"
   timezone: "America/New_York"
+  # NYSE holidays and half-days are computed automatically (src/bot/market_calendar.py).
+  # List unscheduled closures here, e.g. a national day of mourning: ["2027-01-09"].
+  extra_holidays: []
+  extra_early_closes: []
 
 account:
   # Fixed budget used for position sizing, in the trading currency.
