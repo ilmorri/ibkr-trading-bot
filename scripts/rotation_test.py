@@ -48,6 +48,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DATA_DIR = ROOT / "data"
 
 INDEX = "SPY"
+NOT_STOCKS = {"SPY", "QQQ", "IWM", "EFA", "EEM", "DIA", "AGG", "TLT", "IEF", "SHY", "GLD"}
 SKIP_RECENT = 21
 TREND_N = 200
 
@@ -75,6 +76,8 @@ def load_panel() -> tuple[pd.DataFrame, pd.DataFrame, pd.Series]:
     opens, closes = {}, {}
     for path in sorted(DATA_DIR.glob("*_daily.csv")):
         symbol = path.name.replace("_daily.csv", "")
+        if symbol in NOT_STOCKS and symbol != INDEX:
+            continue
         df = pd.read_csv(path, parse_dates=["date"]).set_index("date")
         opens[symbol], closes[symbol] = df["open"], df["close"]
     opens, closes = pd.DataFrame(opens).sort_index(), pd.DataFrame(closes).sort_index()
