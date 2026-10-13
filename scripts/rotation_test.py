@@ -107,7 +107,8 @@ def run(opens, closes, index, start_row, lookback, top_n, use_filter, equity, fr
             target = pending
             pending = None
 
-            for symbol in [s for s in holdings if s not in target]:
+            top, target = target
+            for symbol in [s for s in holdings if s not in top]:
                 shares = holdings.pop(symbol)
                 price = px[symbol]
                 fee = costs.order(shares, price)
@@ -146,7 +147,7 @@ def run(opens, closes, index, start_row, lookback, top_n, use_filter, equity, fr
 
         if row in rebalance_at:
             if use_filter and not (index.iloc[row] > index_sma.iloc[row]):
-                pending = []
+                pending = (set(), [])
                 continue
             past = closes.iloc[row - lookback]
             recent = closes.iloc[row - SKIP_RECENT]
@@ -155,7 +156,8 @@ def run(opens, closes, index, start_row, lookback, top_n, use_filter, equity, fr
             ranked = list(momentum.sort_values(ascending=False).index)
             # Keep holdings still in the top N; fill the rest down the ranking (skipping unaffordable ones happens at execution).
             keep = [s for s in ranked[:top_n] if s in holdings]
-            pending = keep + [s for s in ranked if s not in keep][: top_n * 3]
+            # Sell anything outside the top N; fill free slots down the ranking.
+            pending = (set(ranked[:top_n]), keep + [s for s in ranked if s not in keep][: top_n * 3])
 
     curve = pd.Series(curve, index=dates[start_row:])
     return curve, total_cost, orders

@@ -127,7 +127,8 @@ def simulate_low_vol(bars: dict, spy: pd.DataFrame, mult: float, n_hold: int = 5
 
     for row in range(len(dates)):
         if pending is not None:
-            for sym in [s for s in holdings if s not in pending]:
+            top, pending = pending
+            for sym in [s for s in holdings if s not in top]:
                 k = cols.index(sym)
                 price = o[row, k]
                 if math.isnan(price):
@@ -159,8 +160,10 @@ def simulate_low_vol(bars: dict, spy: pd.DataFrame, mult: float, n_hold: int = 5
         if row in rebalance:
             ranked = sorted((v[row, k], cols[k]) for k in range(len(cols))
                             if not math.isnan(v[row, k]) and not math.isnan(c[row, k]))
-            keep = [s for _, s in ranked[:n_hold] if s in holdings]
-            pending = keep + [s for _, s in ranked if s not in keep][: n_hold * 3]
+            top = {s for _, s in ranked[:n_hold]}
+            keep = [s for s in top if s in holdings]
+            # Sell anything outside the top n; fill free slots down the ranking (whole shares may skip some).
+            pending = (top, keep + [s for _, s in ranked if s not in keep][: n_hold * 3])
     return pd.Series(values, index=dates), trades
 
 
