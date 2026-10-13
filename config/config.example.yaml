@@ -89,3 +89,14 @@ alerts:
   telegram_enabled: false
   telegram_bot_token: ""
   telegram_chat_id: ""
+
+accumulate:
+  # Accumulation bot (scripts/accumulate.py): buys SPYL on Xetra with spare EUR cash, never sells.
+  symbol: "SPYL"
+  exchange: "IBIS2"            # primary listing; orders go through SMART routing
+  currency: "EUR"
+  fee_estimate: 4.0            # EUR per order; replace with the figure from an IBKR order preview
+  max_fee_share: 0.005         # only buy when the fee is at most 0.5% of the order
+  cash_reserve: 0.0            # EUR always left in cash
+  max_order_value: 2000.0      # EUR cap per order
+  limit_buffer: 0.005          # limit price 0.5% above the estimated price
