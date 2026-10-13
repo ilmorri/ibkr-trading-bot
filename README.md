@@ -1,5 +1,7 @@
 # IBKR Trading Bot & Strategy Research
 
+[![tests](https://github.com/ilmorri/ibkr-trading-bot/actions/workflows/tests.yml/badge.svg)](https://github.com/ilmorri/ibkr-trading-bot/actions/workflows/tests.yml)
+
 An automated trading system for Interactive Brokers, built in Python, and a strategy-research framework designed to give honest answers. Over one intensive research cycle it tested 24 trading strategies against real market data under strict anti-overfitting rules. The conclusion: none beat simply holding an index fund once fees and Italian taxes are counted. The project ended by building the one bot the evidence supports.
 
 ![Per-stock view of the strategy visualizer](docs/images/stock_view.png)
@@ -11,7 +13,7 @@ An automated trading system for Interactive Brokers, built in Python, and a stra
 - **Market calendar:** NYSE holidays and half-days computed from the published rules (verified against the 2025–2026 calendars); the flatten time moves earlier on half-days.
 - **Research method:** walk-forward testing, pre-registered rules committed to git *before* each first run, sealed holdout universes, a logged count of holdout looks, and benchmarks on the identical universe. The method caught several false positives that a normal backtest would have reported as profitable.
 - **Data visualization:** a self-contained interactive HTML report showing account value against buy-and-hold and, per stock, the price, the daily mode the strategy chose and every trade. It has tooltips, light and dark themes, and a CVD-validated palette.
-- **Testing:** 41 offline tests (pytest), including a fake `IB` built from real `ib_insync` objects, plus scripted end-to-end tests on the paper account.
+- **Testing:** 41 offline tests (pytest), including a fake `IB` built from real `ib_insync` objects, run with the linter on every push by GitHub Actions; plus scripted end-to-end tests on the paper account.
 
 ## Architecture
 
@@ -90,6 +92,7 @@ Full write-up: [`docs/RESEARCH.md`](docs/RESEARCH.md).
 python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt
 cp config/config.example.yaml config/config.yaml   # then edit
 .venv/bin/python -m pytest                          # 41 offline tests
+.venv/bin/ruff check src scripts tests                # lint (config in pyproject.toml)
 
 # with IB Gateway running on the paper account (port 4002):
 .venv/bin/python scripts/paper_execution_test.py    # end-to-end order checks
