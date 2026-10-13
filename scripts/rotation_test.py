@@ -83,7 +83,9 @@ def load_panel() -> tuple[pd.DataFrame, pd.DataFrame, pd.Series]:
     opens, closes = pd.DataFrame(opens).sort_index(), pd.DataFrame(closes).sort_index()
     index = closes.pop(INDEX)
     opens.pop(INDEX)
-    return opens, closes, index
+    # The index history is longer than the stocks'; start where the stock data starts.
+    first = closes.dropna(how="all").index[0]
+    return opens.loc[first:], closes.loc[first:], index.loc[first:]
 
 
 def month_end_rows(dates: pd.DatetimeIndex) -> list[int]:
