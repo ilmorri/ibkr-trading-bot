@@ -31,6 +31,7 @@ TEMPLATE = r"""<!doctype html>
   --grid: #e8e7e3; --price: #52514e;
   --series-1: #2a78d6; --series-2: #eb6834; --series-3: #1baf7a; --series-4: #eda100;
   --filter-band: rgba(82, 81, 78, 0.10);
+  --level-0: #86b6ef; --level-1: #3987e5; --level-2: #1c5cab; --level-3: #0d366b;
 }
 @media (prefers-color-scheme: dark) {
   :root:where(:not([data-theme="light"])) .viz-root {
@@ -40,6 +41,7 @@ TEMPLATE = r"""<!doctype html>
     --grid: #2e2e2c; --price: #c3c2b7;
     --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
     --filter-band: rgba(195, 194, 183, 0.10);
+    --level-0: #184f95; --level-1: #2a78d6; --level-2: #5598e7; --level-3: #9ec5f4;
   }
 }
 :root[data-theme="dark"] .viz-root {
@@ -49,6 +51,7 @@ TEMPLATE = r"""<!doctype html>
   --grid: #2e2e2c; --price: #c3c2b7;
   --series-1: #3987e5; --series-2: #d95926; --series-3: #199e70; --series-4: #c98500;
   --filter-band: rgba(195, 194, 183, 0.10);
+  --level-0: #184f95; --level-1: #2a78d6; --level-2: #5598e7; --level-3: #9ec5f4;
 }
 html, body { margin: 0; }
 .viz-root { background: var(--surface-1); color: var(--text-primary);
@@ -98,35 +101,31 @@ tbody tr:hover, tbody tr.sel { background: var(--surface-2); }
   <div class="tiles" id="tiles"></div>
 
   <h2>Account value</h2>
-  <p class="sub">The strategy's account against buying the same stocks in equal amounts and holding them.</p>
+  <p class="sub" id="equitysub">The strategy's account against buying the same stocks in equal amounts and holding them.</p>
   <div class="legend">
     <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Strategy account</span>
     <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Hold the same stocks</span>
-    <span class="key"><span class="swatch block" style="background:var(--filter-band)"></span>Market filter on (S&amp;P 500 below its 200-day average: no new buys)</span>
+    <span class="key"><span class="swatch block" style="background:var(--filter-band)"></span><span id="filterlabel">Market filter on (S&amp;P 500 below its 200-day average: no new buys)</span></span>
   </div>
   <div class="chart" id="equity"></div>
 
-  <h2>One stock at a time</h2>
-  <p class="sub">Price, the mode the bot chose for this stock each day, and every trade. Pick a stock, or click a row in the table below.</p>
+  <h2 id="stockhead">One stock at a time</h2>
+  <p class="sub" id="stocksub">Price, the mode the bot chose for this stock each day, and every trade. Pick a stock, or click a row in the table below.</p>
   <div class="controls">
     <label for="pick">Stock</label> <select id="pick"></select>
     <span class="note" id="stocknote"></span>
   </div>
-  <div class="legend">
-    <span class="key"><span class="swatch" style="background:var(--price)"></span>Price</span>
-    <span class="key"><span class="swatch block" style="background:var(--series-3)"></span>Trend mode</span>
-    <span class="key"><span class="swatch block" style="background:var(--series-4)"></span>Dip-buying mode</span>
-    <span class="key"><span class="swatch block" style="background:var(--surface-2);outline:1px solid var(--border)"></span>Standing aside</span>
-    <span class="key">▲ buy &nbsp; ▼ sell (colored by the mode that bought)</span>
-  </div>
+  <div class="legend" id="stocklegend"></div>
   <div class="chart" id="stock"></div>
 
-  <h2>Trades in this stock</h2>
+  <h2 id="tradeshead">Trades in this stock</h2>
   <div class="scroll"><table id="trades"></table></div>
 
+  <div id="allstocks">
   <h2>All stocks</h2>
   <p class="sub">How much of the time each stock spent in each mode, and what its trades made compared with holding it.</p>
   <div class="scroll"><table id="summary"></table></div>
+  </div>
   <p class="note" id="foot"></p>
 </div>
 </div>
@@ -135,11 +134,25 @@ tbody tr:hover, tbody tr.sel { background: var(--surface-2); }
 const D = JSON.parse(document.getElementById("data").textContent);
 const $ = (id) => document.getElementById(id);
 const NS = "http://www.w3.org/2000/svg";
-const fmtMoney = (v) => "$" + Math.round(v).toLocaleString("en-US");
+const fmtMoney = (v) => (D.kind === "tilt" ? "€" : "$") + Math.round(v).toLocaleString("en-US");
 const fmtPct = (v, d = 1) => (v * 100).toFixed(d) + "%";
 const fmtSigned = (v) => (v >= 0 ? "+" : "−") + "$" + Math.abs(v).toFixed(2);
-const MODE_NAME = {0: "Standing aside", 1: "Trend", 2: "Dip-buying"};
-const MODE_VAR = {1: "var(--series-3)", 2: "var(--series-4)"};
+const TILT = D.kind === "tilt";
+const MODE_NAME = TILT ? D.mode_names : {0: "Standing aside", 1: "Trend", 2: "Dip-buying"};
+const MODE_VAR = TILT ? {0: "var(--level-0)", 1: "var(--level-1)", 2: "var(--level-2)", 3: "var(--level-3)"}
+                      : {1: "var(--series-3)", 2: "var(--series-4)"};
+$("stocklegend").innerHTML = `<span class="key"><span class="swatch" style="background:var(--price)"></span>Price</span>` +
+  Object.entries(MODE_NAME).map(([k, n]) => MODE_VAR[k]
+    ? `<span class="key"><span class="swatch block" style="background:${MODE_VAR[k]}"></span>${n}</span>`
+    : `<span class="key"><span class="swatch block" style="background:var(--surface-2);outline:1px solid var(--border)"></span>${n}</span>`).join("") +
+  (TILT ? `<span class="key">▲ invest more &nbsp; ▼ invest less</span>` : `<span class="key">▲ buy &nbsp; ▼ sell (colored by the mode that bought)</span>`);
+if (TILT) {
+  $("allstocks").style.display = "none"; $("tradeshead").textContent = "Orders";
+  $("equitysub").textContent = "The strategy's account against holding the index at 100% the whole time.";
+  $("filterlabel").textContent = "Index below its 200-day average (exposure halved)";
+  $("stockhead").textContent = "How much was invested, day by day";
+  $("stocksub").textContent = "Price, the share of the account invested each day (darker = more), and every order that changed it.";
+}
 const COMP_VAR = {trend: "var(--series-3)", revert: "var(--series-4)"};
 const COMP_NAME = {trend: "Trend", revert: "Dip-buying"};
 const dates = D.dates.map((d) => new Date(d + "T00:00:00Z"));
@@ -162,14 +175,17 @@ function niceTicks(lo, hi, n = 5) {
 // ---------------------------------------------------------------- header
 $("title").textContent = D.title;
 const a = D.account;
-$("subtitle").textContent = `${D.dates[0]} to ${D.dates[N - 1]} · ${Object.keys(D.stocks).length} stocks · account ${fmtMoney(a.equity)}, up to ${a.slots} positions of ${fmtMoney(a.slot_value)} · generated ${D.generated}`;
+$("subtitle").textContent = TILT
+  ? `${D.dates[0]} to ${D.dates[N - 1]} · account €${a.equity.toLocaleString("en-US")}, €${a.fee} per order · ${D.note || ""} · generated ${D.generated}`
+  : `${D.dates[0]} to ${D.dates[N - 1]} · ${Object.keys(D.stocks).length} stocks · account ${fmtMoney(a.equity)}, up to ${a.slots} positions of ${fmtMoney(a.slot_value)} · generated ${D.generated}`;
 const S = D.stats.strategy, B = D.stats.benchmark;
 const tiles = [
   ["Yearly return (CAGR)", fmtPct(S.cagr), `hold: ${fmtPct(B.cagr)}`],
   ["Return per unit of risk (Sharpe)", S.sharpe.toFixed(2), `hold: ${B.sharpe.toFixed(2)}`],
   ["Worst drop from a peak", fmtPct(S.max_dd), `hold: ${fmtPct(B.max_dd)}`],
   ["End value", fmtMoney(D.equity[N - 1]), `hold: ${fmtMoney(D.benchmark[N - 1])}`],
-  ["Trades", D.trades.length.toLocaleString("en-US"), `wins: ${D.trades.filter(t => t.pnl > 0).length}`],
+  TILT ? ["Orders", D.orders.length.toLocaleString("en-US"), `fees: ${fmtMoney(D.orders.reduce((x, o) => x + o.cost, 0))}`]
+       : ["Trades", D.trades.length.toLocaleString("en-US"), `wins: ${D.trades.filter(t => t.pnl > 0).length}`],
 ];
 $("tiles").innerHTML = tiles.map(([l, v, c]) => `<div class="tile"><div class="label">${l}</div><div class="value">${v}</div><div class="cmp">${c}</div></div>`).join("");
 
@@ -217,7 +233,7 @@ function timeChart(container, opts) {
     for (let i = 0; i <= N; i++) {
       const v = i < N ? opts.strip[i] : null;
       if (v !== cur) {
-        if (cur && start !== null) el("rect", {x: x(start), y: sy, width: Math.max(1, x(i - 1) - x(start)), height: sh, fill: MODE_VAR[cur]}, svg);
+        if (cur != null && MODE_VAR[cur] && start !== null) el("rect", {x: x(start), y: sy, width: Math.max(1, x(i - 1) - x(start)), height: sh, fill: MODE_VAR[cur]}, svg);
         cur = v; start = i;
       }
     }
@@ -305,7 +321,7 @@ const summary = symbols.map((s) => {
           trend: share(1), revert: share(2), cash: share(0), hold};
 }).sort((p, q) => q.trades - p.trades || p.s.localeCompare(q.s));
 
-$("pick").innerHTML = summary.map((r) => `<option value="${r.s}">${r.s} (${r.trades} trades)</option>`).join("");
+$("pick").innerHTML = summary.map((r) => `<option value="${r.s}">${r.s}${TILT ? "" : ` (${r.trades} trades)`}</option>`).join("");
 $("summary").innerHTML = `<thead><tr><th>Stock</th><th>Trades</th><th>Won</th><th>Trade P&amp;L</th><th>Trend</th><th>Dip-buying</th><th>Aside</th><th>Stock's own move</th></tr></thead><tbody>` +
   summary.map((r) => `<tr data-s="${r.s}"><td>${r.s}</td><td>${r.trades}</td><td>${r.wins}</td><td>${fmtSigned(r.pnl)}</td>` +
     `<td>${fmtPct(r.trend, 0)}</td><td>${fmtPct(r.revert, 0)}</td><td>${fmtPct(r.cash, 0)}</td><td>${fmtPct(r.hold, 0)}</td></tr>`).join("") + "</tbody>";
@@ -330,11 +346,29 @@ function drawStock() {
     tip: (i) => `<b>${D.dates[i]}</b><br><span class="muted">Price</span> ${st.close[i] == null ? "–" : "$" + st.close[i].toFixed(2)}` +
                 `<br><span class="muted">Mode</span> ${st.mode[i] == null ? "not enough history" : MODE_NAME[st.mode[i]]}`,
   });
+  if (TILT) { drawOrders(sym, st); return; }
   $("trades").innerHTML = `<thead><tr><th>Mode</th><th>Bought</th><th>Price</th><th>Sold</th><th>Price</th><th>Shares</th><th>Why sold</th><th>P&amp;L</th></tr></thead><tbody>` +
     (tr.length ? tr.map((t) => `<tr><td>${COMP_NAME[t.component]}</td><td>${t.entry_date}</td><td>$${t.entry.toFixed(2)}</td><td>${t.exit_date}</td><td>$${t.exit.toFixed(2)}</td>` +
       `<td>${t.shares}</td><td>${t.reason.replace("_", " ")}</td><td class="${t.pnl > 0 ? "mark-up" : "mark-down"}">${fmtSigned(t.pnl)}</td></tr>`).join("")
       : `<tr><td colspan="8">No trades in this stock.</td></tr>`) + "</tbody>";
   document.querySelectorAll("#summary tbody tr").forEach((r) => r.classList.toggle("sel", r.dataset.s === sym));
+}
+function drawOrders(sym, st) {
+  const pct = (v) => Math.round(v * 100) + "%";
+  const markers = D.orders.filter((o) => idxOf[o.date] != null).map((o) => ({
+    i: idxOf[o.date], v: st.close[idxOf[o.date]], up: o.to > o.from, color: MODE_VAR[[0.25, 0.5, 0.75, 1].indexOf(o.to)],
+    html: `<b>${o.to > o.from ? "▲ Invest more" : "▼ Invest less"}</b><br><span class="muted">${o.date}</span> ${pct(o.from)} → ${pct(o.to)}<br>` +
+          `<span class="muted">Why</span> ${o.reason}<br><span class="muted">Cost</span> €${o.cost.toFixed(2)}`}));
+  $("stocknote").textContent = `${D.orders.length} orders; average invested ${pct(st.exposure.reduce((x, v) => x + v, 0) / st.exposure.length)}`;
+  timeChart($("stock"), {
+    height: 360, label: `${sym} price, exposure and orders`,
+    series: [{values: st.close, color: "var(--price)", label: sym}], strip: st.mode, markers,
+    yfmt: (v) => "$" + (Number.isInteger(v) ? v : v.toFixed(2)),
+    tip: (i) => `<b>${D.dates[i]}</b><br><span class="muted">Price</span> $${st.close[i].toFixed(2)}<br><span class="muted">Invested</span> ${pct(st.exposure[i])}`,
+  });
+  $("trades").innerHTML = `<thead><tr><th>Date</th><th>From</th><th>To</th><th>Why</th><th>Price</th><th>Cost</th></tr></thead><tbody>` +
+    D.orders.map((o) => `<tr><td>${o.date}</td><td>${pct(o.from)}</td><td class="${o.to > o.from ? "mark-up" : "mark-down"}">${pct(o.to)}</td>` +
+      `<td>${o.reason}</td><td>$${o.price.toFixed(2)}</td><td>€${o.cost.toFixed(2)}</td></tr>`).join("") + "</tbody>";
 }
 $("pick").addEventListener("change", drawStock);
 // Link parameters: #stock=INTC&theme=dark
