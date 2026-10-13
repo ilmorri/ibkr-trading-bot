@@ -74,7 +74,7 @@ Full write-up: [`docs/RESEARCH.md`](docs/RESEARCH.md).
 **Takeaways**
 
 - **Selection bias is the biggest trap.** Every impressive result came from stocks chosen with hindsight; a benchmark on the *identical* universe and a fresh-stock holdout exposed each one.
-- **Fixed per-order fees dominate small accounts.** At €300, even one order a month costs more than a typical year's edge.
+- **Fixed per-order fees dominate small accounts.** With a few hundred euros, even one order a month costs more than a typical year's edge.
 - **Taxes matter as much as fees.** Italy taxes ETF gains at 26% on each sale, and ETF losses cannot offset later ETF gains. Any strategy that sells regularly gives up the compounding that buy-and-hold keeps.
 
 ## The final bot
@@ -111,4 +111,5 @@ Python 3.12 · ib_insync · pandas · numpy · pytest · vanilla JS/SVG for the 
 ## Notes
 
 - Built with AI pair-programming tools (Qwen Code, Claude Code). I set the goals and research method, reviewed the changes, and ran and checked the tests and paper-trading results.
-- This is a research and engineering project, not financial advice. All results are simulations on historical data.
+- This is a research and engineering project, not financial advice. All results are simulations on historical data. Running trading code against a live account is at your own risk.
+- Licensed under the [MIT License](LICENSE).

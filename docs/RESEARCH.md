@@ -1,6 +1,6 @@
 # Strategy research log
 
-October 2026, US equities and UCITS ETFs through Interactive Brokers, for a small (€300) Italian cash account. All amounts are simulations on historical data.
+October 2026, US equities and UCITS ETFs through Interactive Brokers, for a small Italian cash account (a few hundred euros). All amounts are simulations on historical data.
 
 ## Method
 
@@ -18,7 +18,7 @@ Each round of testing tightened the method after a false positive slipped throug
 
 ## 1. Intraday strategies (1-minute bars)
 
-Opening-range breakout and VWAP mean reversion on 12 US stocks, 64 days, whole shares, $300 account.
+Opening-range breakout and VWAP mean reversion on 12 US stocks, 64 days, whole shares, simulated $300 account.
 
 - **Result:** all 23 stock/strategy combinations that traded lost after costs. Gross −$45, costs $207, net −$252 over 273 trades. 66% of trades ended at the stop and only 5% reached the target.
 - **Parameter sweep:** +$17 on the 64 days it was tuned on, −$46 on the three unseen months before.
@@ -79,7 +79,7 @@ The visualizer showed why the per-stock version lost: it stood aside 50–76% of
 
 | Strategy | Result |
 |---|---|
-| Volatility-targeted index tilt (25–100% exposure) | FAIL. About 12 orders a year; 4.5% vs 8.0% hold. On €300, fees wipe the account out |
+| Volatility-targeted index tilt (25–100% exposure) | FAIL. About 12 orders a year; 4.5% vs 8.0% hold. On a few-hundred-euro account, fees wipe it out |
 | Low volatility (5 calmest stocks, quarterly) | FAIL. 3.5% vs 9.7% |
 | **Halloween** (hold November–April) | **PASS:** 13/19 countries beat buy-and-hold on Sharpe; median max DD −39% vs −65% |
 
@@ -89,7 +89,7 @@ Halloween is a real risk reducer, but it makes less money: median CAGR 6.8% vs 8
 
 ## 7. Contribution timing
 
-€300 plus €100 a month, never selling, S&P 500 2001–2026, €4 per order:
+Simulated scenario: €300 to start plus €100 a month, never selling, S&P 500 2001–2026, €4 per order:
 
 | Rule | Paid in | After 26% tax |
 |---|---|---|

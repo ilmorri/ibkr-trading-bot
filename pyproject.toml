@@ -3,6 +3,7 @@ name = "ibkr-trading-bot"
 version = "0.2.0"
 description = "Automated Interactive Brokers trading bot and strategy research framework"
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 
 [tool.ruff]

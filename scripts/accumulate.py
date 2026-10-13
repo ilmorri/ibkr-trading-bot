@@ -8,7 +8,7 @@ Usage:
     python scripts/accumulate.py --live --execute      # LIVE account, place the order
 
 Why this and not a trading strategy: in the research of 2026-10-13 nothing
-beat buying and holding after fees and Italian tax (see the vault notes).
+beat buying and holding after fees and Italian tax (see docs/RESEARCH.md).
 This bot does the part that historically worked, cheaply:
 
   - it buys only when the order is big enough that the fee is at most
