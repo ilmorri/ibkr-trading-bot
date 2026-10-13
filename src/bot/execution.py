@@ -268,21 +268,22 @@ class ExecutionEngine:
             score_reason = str(getattr(signal, "score_reason", ""))
             action = signal.action.value if hasattr(signal.action, "value") else str(signal.action)
 
-            def attempt(**kwargs: Any) -> OrderAttempt:
-                fields = dict(
-                    bot_id=bot_id,
-                    symbol=bot_id,
-                    strategy=strategy_name,
-                    action=action,
-                    price=price,
-                    stop=stop,
-                    target=target,
-                    score=score,
-                    net_rr=net_rr,
-                    score_reason=score_reason,
-                )
-                fields.update(kwargs)
-                return OrderAttempt(**fields)
+            # Fields shared by every OrderAttempt for this candidate; outcome fields are added per case.
+            base = dict(
+                bot_id=bot_id,
+                symbol=bot_id,
+                strategy=strategy_name,
+                action=action,
+                price=price,
+                stop=stop,
+                target=target,
+                score=score,
+                net_rr=net_rr,
+                score_reason=score_reason,
+            )
+
+            def attempt(base: dict[str, Any] = base, **kwargs: Any) -> OrderAttempt:
+                return OrderAttempt(**{**base, **kwargs})
 
             decision = self.risk.evaluate_entry(
                 bot_id=bot_id,

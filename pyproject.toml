@@ -1,0 +1,26 @@
+[project]
+name = "ibkr-trading-bot"
+version = "0.2.0"
+description = "Automated Interactive Brokers trading bot and strategy research framework"
+readme = "README.md"
+requires-python = ">=3.12"
+
+[tool.ruff]
+line-length = 120
+target-version = "py312"
+src = ["src"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "B", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Scripts and tests add src/ to sys.path before importing the bot package.
+"scripts/*" = ["E402", "E501"]
+"tests/*" = ["E402", "E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bot"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "tests"]

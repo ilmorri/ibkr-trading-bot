@@ -30,11 +30,9 @@ S&P 500 at EUR 4 AND in at least 60% of the country funds at EUR 4.
 """
 from __future__ import annotations
 
-import math
 import sys
 from pathlib import Path
 
-import numpy as np
 import pandas as pd
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))

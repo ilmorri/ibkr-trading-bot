@@ -48,7 +48,6 @@ import argparse
 import csv
 import json
 import math
-import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -182,7 +181,6 @@ def main() -> int:
     if args.dump:
         s1, h, n, avg, curve, exposure, orders = evaluate(spy, *JUDGE, 1.0)
         hold_curve = spy["close"].reindex(curve.index) / spy["close"].reindex(curve.index).iloc[0] * JUDGE[0]
-        sig = target_exposure(spy).reindex(curve.index)
         level_code = {0.25: 0, 0.5: 1, 0.75: 2, 1.0: 3}
         payload = {
             "kind": "tilt",

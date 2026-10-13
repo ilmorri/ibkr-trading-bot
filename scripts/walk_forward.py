@@ -132,7 +132,7 @@ STRATEGIES = {
 
 def param_grid(grid: dict) -> list[dict]:
     keys = list(grid)
-    return [dict(zip(keys, values)) for values in itertools.product(*(grid[k] for k in keys))]
+    return [dict(zip(keys, values, strict=True)) for values in itertools.product(*(grid[k] for k in keys))]
 
 
 # --------------------------------------------------------------------------

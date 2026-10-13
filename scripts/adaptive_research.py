@@ -151,7 +151,7 @@ def shadow_trades(bars: dict, sigs: dict) -> dict[str, list[tuple]]:
     out = {name: [] for name in COMPONENTS}
     for symbol, df in bars.items():
         s = sigs[symbol]
-        o, lo, c = df["open"].to_numpy(), df["low"].to_numpy(), df["close"].to_numpy()
+        o, lo = df["open"].to_numpy(), df["low"].to_numpy()
         for name, comp in COMPONENTS.items():
             entry = s[comp["entry"]].fillna(False).to_numpy(bool)
             exit_ = s[comp["exit"]].fillna(False).to_numpy(bool)

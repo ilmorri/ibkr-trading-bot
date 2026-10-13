@@ -6,8 +6,9 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from bot.config import load_config
 from ib_insync import IB, Stock
+
+from bot.config import load_config
 
 
 def clean(x):

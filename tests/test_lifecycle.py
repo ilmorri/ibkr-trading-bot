@@ -11,12 +11,12 @@ SRC = ROOT / "src"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
 
+from test_execution import make_candidate, make_risk
+
 from bot.execution import ExecutionEngine, MockExecutionClient
 from bot.market_calendar import MarketCalendar
 from bot.risk import RiskManager
 from bot.state import StateStore
-
-from test_execution import make_candidate, make_risk
 
 
 def make_engine(client: MockExecutionClient, risk: RiskManager | None = None) -> ExecutionEngine:
