@@ -10,3 +10,4 @@ logs/*
 config/config.yaml
 .env
 .qwen/
+reports/
