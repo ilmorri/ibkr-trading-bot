@@ -356,7 +356,7 @@ function drawStock() {
 function drawOrders(sym, st) {
   const pct = (v) => Math.round(v * 100) + "%";
   const markers = D.orders.filter((o) => idxOf[o.date] != null).map((o) => ({
-    i: idxOf[o.date], v: st.close[idxOf[o.date]], up: o.to > o.from, color: MODE_VAR[[0.25, 0.5, 0.75, 1].indexOf(o.to)],
+    i: idxOf[o.date], v: st.close[idxOf[o.date]], up: o.to > o.from, color: MODE_VAR[[0.25, 0.5, 0.75, 1].indexOf(o.to)] || "var(--text-muted)",
     html: `<b>${o.to > o.from ? "▲ Invest more" : "▼ Invest less"}</b><br><span class="muted">${o.date}</span> ${pct(o.from)} → ${pct(o.to)}<br>` +
           `<span class="muted">Why</span> ${o.reason}<br><span class="muted">Cost</span> €${o.cost.toFixed(2)}`}));
   $("stocknote").textContent = `${D.orders.length} orders; average invested ${pct(st.exposure.reduce((x, v) => x + v, 0) / st.exposure.length)}`;
