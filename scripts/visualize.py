@@ -104,8 +104,8 @@ tbody tr:hover, tbody tr.sel { background: var(--surface-2); }
   <p class="sub" id="equitysub">The strategy's account against buying the same stocks in equal amounts and holding them.</p>
   <div class="legend">
     <span class="key"><span class="swatch" style="background:var(--series-1)"></span>Strategy account</span>
-    <span class="key"><span class="swatch" style="background:var(--series-2)"></span>Hold the same stocks</span>
-    <span class="key"><span class="swatch block" style="background:var(--filter-band)"></span><span id="filterlabel">Market filter on (S&amp;P 500 below its 200-day average: no new buys)</span></span>
+    <span class="key"><span class="swatch" style="background:var(--series-2)"></span><span id="holdlabel">Hold the same stocks</span></span>
+    <span class="key" id="filterkey"><span class="swatch block" style="background:var(--filter-band)"></span><span id="filterlabel">Market filter on (S&amp;P 500 below its 200-day average: no new buys)</span></span>
   </div>
   <div class="chart" id="equity"></div>
 
@@ -150,6 +150,7 @@ if (TILT) {
   $("allstocks").style.display = "none"; $("tradeshead").textContent = "Orders";
   $("equitysub").textContent = "The strategy's account against holding the index at 100% the whole time.";
   $("filterlabel").textContent = "Index below its 200-day average (exposure halved)";
+  $("holdlabel").textContent = "Hold the index";
   $("stockhead").textContent = "How much was invested, day by day";
   $("stocksub").textContent = "Price, the share of the account invested each day (darker = more), and every order that changed it.";
 }
@@ -370,6 +371,7 @@ function drawOrders(sym, st) {
     D.orders.map((o) => `<tr><td>${o.date}</td><td>${pct(o.from)}</td><td class="${o.to > o.from ? "mark-up" : "mark-down"}">${pct(o.to)}</td>` +
       `<td>${o.reason}</td><td>$${o.price.toFixed(2)}</td><td>€${o.cost.toFixed(2)}</td></tr>`).join("") + "</tbody>";
 }
+if (D.market_ok.every(Boolean)) $("filterkey").style.display = "none";
 $("pick").addEventListener("change", drawStock);
 // Link parameters: #stock=INTC&theme=dark
 const params = new URLSearchParams(location.hash.slice(1));
