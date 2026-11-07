@@ -113,7 +113,7 @@ def main() -> int:
     try:
         accounts = ib.managedAccounts()
         is_paper = all(a.startswith("DU") for a in accounts)
-        if args.live == is_paper:
+        if not accounts or args.live == is_paper:
             raise SystemExit(f"Refusing: --live={args.live} but accounts {accounts} are {'paper' if is_paper else 'live'}")
         print(f"[{mode}] accounts {accounts}")
 
